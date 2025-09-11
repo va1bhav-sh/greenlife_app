@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>♻️ GreenLife - Log Your Recycling</title>
+    <meta name="description" content="Track your recycling impact with GreenLife - an eco-friendly recycling logger">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --eco-primary: #22c55e;
+            --eco-secondary: #16a34a;
+            --eco-accent: #10b981;
+            --eco-light: #f0fdf4;
+            --eco-dark: #15803d;
+            --eco-muted: #6b7280;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--eco-light) 0%, #f8fafc 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .eco-gradient {
+            background: linear-gradient(135deg, var(--eco-primary), var(--eco-accent));
+        }
+
+        .eco-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.2);
+        }
+
+        .eco-btn-primary {
+            background: linear-gradient(135deg, var(--eco-primary), var(--eco-accent));
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .eco-btn-primary:hover {
+            background: linear-gradient(135deg, var(--eco-accent), var(--eco-primary));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+            color: white;
+        }
+
+        .eco-btn-outline {
+            border: 2px solid var(--eco-primary);
+            color: var(--eco-primary);
+            background: transparent;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .eco-btn-outline:hover {
+            background: var(--eco-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .eco-btn-outline.accent {
+            border-color: var(--eco-accent);
+            color: var(--eco-accent);
+        }
+
+        .eco-btn-outline.accent:hover {
+            background: var(--eco-accent);
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--eco-primary);
+            box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+        }
+
+        .form-select:focus {
+            border-color: var(--eco-primary);
+            box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+        }
+
+        .eco-title {
+            color: var(--eco-dark);
+            font-weight: 700;
+        }
+
+        .eco-subtitle {
+            color: var(--eco-muted);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4 py-md-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 eco-title mb-2">♻️ GreenLife</h1>
+            <p class="lead eco-subtitle">Log Your Recycling</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <!-- Main Form Card -->
+                <div class="card eco-card border-0 rounded-4 mb-4">
+                    <div class="card-header text-center py-4 bg-transparent border-0">
+                        <h2 class="h4 eco-title mb-1">Add Recycling Entry</h2>
+                        <p class="text-muted mb-0">Track your eco-friendly impact</p>
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+                        <form id="recyclingForm" class="needs-validation" novalidate>
+                            <!-- Name Input -->
+                            <div class="mb-4">
+                                <label for="name" class="form-label fw-medium eco-title">Your Name</label>
+                                <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                    placeholder="Enter your name" required>
+                                <div class="invalid-feedback">Please enter your name.</div>
+                            </div>
+
+                            <!-- Item Selection -->
+                            <div class="mb-4">
+                                <label for="item" class="form-label fw-medium eco-title">Recycling Item</label>
+                                <select class="form-select form-select-lg" id="item" name="item" required>
+                                    <option value="">Select item type</option>
+                                    <option value="Plastic Bottles">Plastic Bottles</option>
+                                    <option value="Cardboard">Cardboard</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Metal">Metal</option>
+                                    <option value="Glass">Glass</option>
+                                    <option value="E-Waste">E-Waste</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an item type.</div>
+                            </div>
+
+                            <!-- Quantity Input -->
+                            <div class="mb-4">
+                                <label for="quantity" class="form-label fw-medium eco-title">Quantity</label>
+                                <input type="number" class="form-control form-control-lg" id="quantity" name="quantity"
+                                    placeholder="Enter quantity" min="1" required>
+                                <div class="invalid-feedback">Please enter a valid quantity.</div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-lg eco-btn-primary w-100 py-3">
+                                🌱 Submit Recycling Entry
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <a href="/leaderboard" class="btn btn-lg eco-btn-outline w-100 py-3">
+                            🏆 View Leaderboard
+                        </a>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="/rewards" class="btn btn-lg eco-btn-outline accent w-100 py-3">
+                            🎁 View Rewards
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Form validation and submission
+        document.getElementById('recyclingForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const name = document.getElementById('name').value.trim();
+            const item = document.getElementById('item').value;
+            const quantity = document.getElementById('quantity').value;
+
+            // Bootstrap validation
+            if (!form.checkValidity()) {
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+
+            // Show success toast
+            showToast('success', 'Recycling logged successfully! 🌱',
+                `${quantity} ${item} items logged for ${name}. Keep up the great work!`);
+
+            // Reset form
+            form.reset();
+            form.classList.remove('was-validated');
+        });
+
+        // Toast function
+        function showToast(type, title, message) {
+            const toastId = 'toast-' + Date.now();
+            const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}</strong><br>
+                            <small>${message}</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('toastContainer').insertAdjacentHTML('beforeend', toastHtml);
+
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+            toast.show();
+
+            // Clean up after toast is hidden
+            toastElement.addEventListener('hidden.bs.toast', function () {
+                toastElement.remove();
+            });
+        }
+
+        // Enhanced form interactions
+        document.querySelectorAll('.form-control, .form-select').forEach(element => {
+            element.addEventListener('focus', function () {
+                this.parentNode.querySelector('.form-label').style.color = 'var(--eco-primary)';
+            });
+
+            element.addEventListener('blur', function () {
+                this.parentNode.querySelector('.form-label').style.color = 'var(--eco-dark)';
+            });
+        });
+    </script>
+</body>
+
+</html>
