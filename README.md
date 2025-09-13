@@ -1,2 +1,0 @@
-# greenlife_app
-
