@@ -26,7 +26,7 @@ def calculate_points(item, qty):
         "Glass": 6,
         "E-Waste": 12
     }
-    return points_map.get(item, 1) * qty  # default 1 if item not found
+    return points_map.get(item, 1) * qty # default 1 if item not found
 
 # Home page → Form
 @app.route("/", methods=["GET", "POST"])
@@ -78,7 +78,6 @@ def rewards():
         {"tier": "Platinum", "points": 500, "reward": "Community Recognition"}
     ]
     return render_template("rewards.html", rewards=rewards_data)
-
 
 if __name__ == "__main__":
     init_db()
