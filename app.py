@@ -10,9 +10,16 @@ import os
 
 # --- Flask Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///greenlife.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-123') # Add a default
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# --- FIX: Read the database URL from the environment variable ---
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    # Fix for newer SQLAlchemy versions
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///greenlife.db'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -393,7 +400,13 @@ def rider_complete(pickup_id):
     db.session.commit()
     return redirect(url_for('rider_dashboard'))
 
+# --- FIX: Add a custom command to initialize the database ---
+@app.cli.command("initdb")
+def initdb_command():
+    """Initializes the database and creates challenges."""
+    init_db()
+    print("Initialized the database and created dummy challenges.")
+
 # --- Main Run ---
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
