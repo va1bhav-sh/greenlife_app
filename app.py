@@ -9,10 +9,19 @@ from datetime import datetime
 import os
 
 # --- Flask Setup ---
-app = Flask(__name__)
+# Use instance_relative_config=True so the database file is stored in /instance
+app = Flask(__name__, instance_relative_config=True)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///greenlife.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'greenlife.db')}"
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Ensure instance folder exists (so SQLite can create the DB file)
+try:
+    os.makedirs(app.instance_path, exist_ok=True)
+except Exception:
+    pass
+
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -120,6 +129,16 @@ def load_user(user_id):
     if u:
         return u
     return db.session.get(Rider, int(user_id))
+
+# --- Ensure DB exists and seed challenges immediately (Flask 3.1 compatible) ---
+with app.app_context():
+    db.create_all()
+    try:
+        if not Challenge.query.count():
+            create_dummy_challenges()
+    except Exception as e:
+        print("DB seed error:", e)
+
 
 # --- Main Routes ---
 @app.route("/", methods=["GET", "POST"])
@@ -345,65 +364,16 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# --- Rider Routes ---
-@app.route("/rider")
-@login_required
-def rider_dashboard():
-    if not isinstance(current_user, Rider):
-        flash("Rider access only")
-        return redirect(url_for('index'))
-    requested_pickups = Pickup.query.filter_by(status='requested').order_by(Pickup.created_at.desc()).all()
-    my_pickups = Pickup.query.filter_by(status='assigned', rider_id=current_user.id).order_by(Pickup.created_at.desc()).all()
-    return render_template('rider_dashboard.html', requested=requested_pickups, assigned=my_pickups)
 
-@app.route("/rider/accept/<int:pickup_id>", methods=["POST"])
-@login_required
-def rider_accept(pickup_id):
-    if not isinstance(current_user, Rider):
-        flash("Rider access only")
-        return redirect(url_for('index'))
-    p = db.session.get(Pickup, pickup_id)
-    if not p:
-        flash("Pickup not found")
-        return redirect(url_for('rider_dashboard'))
-    if p.status != 'requested':
-        flash("Pickup already assigned")
-        return redirect(url_for('rider_dashboard'))
-    p.rider_id = current_user.id
-    p.status = 'assigned'
-    db.session.commit()
-    flash("Pickup accepted")
-    return redirect(url_for('rider_dashboard'))
 
-@app.route("/rider/complete/<int:pickup_id>", methods=["POST"])
-@login_required
-def rider_complete(pickup_id):
-    if not isinstance(current_user, Rider):
-        flash("Rider access only")
-        return redirect(url_for('index'))
-
-    p = db.session.get(Pickup, pickup_id)
-    if not p:
-        flash("Pickup not found")
-        return redirect(url_for('rider_dashboard'))
-    if p.rider_id != current_user.id:
-        flash("This pickup is not assigned to you")
-        return redirect(url_for('rider_dashboard'))
-
-    p.status = 'completed'
-    u = db.session.get(User, p.user_id)
-    if u:
-        points_to_add = calculate_points(p.item_type, p.quantity)
-        u.points = (u.points or 0) + points_to_add
-        
-        # --- FIX: Removed tree_level increase from here ---
-        
-        flash(f"Pickup completed! {points_to_add} points awarded to {u.name}.")
-    
-    db.session.commit()
-    return redirect(url_for('rider_dashboard'))
-
-# --- Main Run ---
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    # For local development only
+    with app.app_context():
+        db.create_all()
+        try:
+            create_dummy_challenges()
+        except Exception as e:
+            print("DB init error:", e)
+
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+
