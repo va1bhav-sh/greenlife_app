@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}GreenLife{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --eco-green: #16a34a;
+      --eco-dark: #0f5132;
+      --eco-light: #f0fdf4;
+    }
+    body {
+      background: linear-gradient(180deg,#f0fdf4,#f8fafc);
+      min-height: 100vh;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .brand-bar {
+      background: linear-gradient(90deg, rgba(34,197,94,0.10), rgba(16,185,129,0.06));
+      border-bottom: 1px solid rgba(16,185,129,0.08);
+      padding: 16px 0;
+    }
+    .brand-title {
+      color: var(--eco-green);
+      font-weight: 800;
+      font-size: 1.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .brand-sub {
+      color: #6b7280;
+      font-weight: 500;
+      font-size: .95rem;
+      margin-left: .2rem;
+    }
+    .user-bubble { display: flex; align-items: center; gap: .6rem; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--eco-green); color: white;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 700;
+    }
+    .container-narrow { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+    footer { background: #fff; border-top: 1px solid rgba(0,0,0,0.05); }
+  </style>
+</head>
+
+<body>
+  <header class="brand-bar">
+    <div class="container-narrow d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <div class="brand-title">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12L17 8" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 12L7 8" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 3L12 7" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 21L12 17" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16v2a2 2 0 0 0 2 2h2" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 8V6a2 2 0 0 0-2-2h-2" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>GreenLife</span>
+          <small class="brand-sub">Recycle. Earn. Impact.</small>
+        </div>
+      </div>
+
+      <nav>
+        {% if current_user.is_authenticated %}
+        <div class="user-bubble">
+          <div class="avatar">{{ current_user.name[0]|upper }}</div>
+          <div class="d-none d-md-block">
+            <div style="font-weight:700">{{ current_user.name }}</div>
+            
+            {% if current_user.points is defined %}
+              <div style="font-size:.85rem; color:#6b7280">{{ current_user.points or 0 }} pts</div>
+            {% else %}
+              <div style="font-size:.85rem; color:#6b7280">Rider Account</div>
+            {% endif %}
+
+          </div>
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm ms-2">Logout</a>
+        </div>
+        {% else %}
+        <div>
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">Login</a>
+          <a href="{{ url_for('signup') }}" class="btn btn-outline-success btn-sm ms-2">Sign up</a>
+        </div>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="py-4">
+    <div class="container container-narrow">
+      
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="mb-3">
+            {% for message in messages %}
+              <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="text-center py-3 small text-muted">
+    © {{ now().year }} GreenLife. All rights reserved.
+  </footer>
+
+  <script src="

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Request Pickup — GreenLife{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">🚚 Request Pickup</h2>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" action="{{ url_for('request_pickup') }}">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Item</label>
+            <select name="item" class="form-select">
+              <option>Plastic Bottles</option>
+              <option>Cardboard</option>
+              <option>Electronics</option>
+              <option>Metal</option>
+              <option>Glass</option>
+              <option>E-Waste</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Quantity</label>
+            <input type="number" name="quantity" min="1" value="1" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Address</label>
+            <textarea name="address" class="form-control" rows="2" placeholder="Enter your full pickup address">{{ user.address if user and user.address else '' }}</textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-medium">Preferred date</label>
+              <input type="date" name="date" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-medium">Preferred time</label>
+              <input type="time" name="time" class="form-control">
+            </div>
+          </div>
+
+          <button class="btn btn-success btn-lg" type="submit">Request Pickup</button>
+          <a class="btn btn-link" href="{{ url_for('index') }}">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const detected = localStorage.getItem('lastDetectedItem');
+      if (detected) {
+        const map = { 'plastic': 'Plastic Bottles', 'cardboard': 'Cardboard', 'glass': 'Glass', 'metal': 'Metal', 'electronics': 'Electronics', 'e-waste': 'E-Waste', 'ewaste': 'E-Waste' };
+        for (const opt of document.querySelectorAll('select[name="item"] option')) {
+          if (opt.textContent === map[detected.toLowerCase()] || opt.textContent.toLowerCase().includes(detected.toLowerCase())) {
+            opt.selected = true;
+            break;
+          }
+        }
+      }
+    } catch (e) { console.warn('no localStorage or mapping', e); }
+  });
+</script>
+{% endblock %}

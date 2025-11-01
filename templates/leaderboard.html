@@ -1,26 +1,56 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block title %}Leaderboard — GreenLife{% endblock %}
+{% block content %}
 
-<head>
-    <title>Leaderboard - GreenLife</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>🏆 GreenLife Leaderboard</h2>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-success">⬅ Back</a>
+</div>
 
-<body class="container mt-5">
-    <h2 class="mb-4">🏆 GreenLife Leaderboard</h2>
-    <table class="table table-bordered">
-        <tr>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <p class="text-muted mb-3">
+      Top recyclers earn more points and unlock rewards. Keep recycling! ♻️
+    </p>
+
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Rank</th>
             <th>Name</th>
             <th>Points</th>
-        </tr>
-        {% for user in users %}
-        <tr>
-            <td>{{ user[0] }}</td>
-            <td>{{ user[1] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <a href="/" class="btn btn-primary mt-3">Back to Home</a>
-</body>
+            <th>Progress to next tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set rank = 0 %}
+          {% for user in users %}
+            {% set rank = rank + 1 %}
+            {% set name = user[0] %}
+            {% set pts = user[1] %}
+            {% set next_tier = (50 if pts < 50 else (100 if pts < 100 else (200 if pts < 200 else 500))) %}
+            {% set progress = (pts / next_tier * 100) if next_tier else 100 %}
+            <tr class="{% if rank == 1 %}table-warning{% elif rank == 2 %}table-secondary{% elif rank == 3 %}table-danger{% endif %}">
+              <td><strong>#{{ rank }}</strong></td>
+              <td>{{ name }} {% if current_user.name == name %}<span class="badge bg-success ms-1">You</span>{% endif %}</td>
+              <td><strong>{{ pts }}</strong> pts</td>
+              <td>
+                <div class="progress" style="height:12px;">
+                  <div class="progress-bar bg-success" style="width:{{ progress }}%"></div>
+                </div>
+                <small class="text-muted">{{ pts }} / {{ next_tier }} points</small>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-</html>
+<div class="text-center mt-4">
+  <a href="{{ url_for('rewards') }}" class="btn btn-outline-success">🎁 View Rewards</a>
+</div>
+
+{% endblock %}
