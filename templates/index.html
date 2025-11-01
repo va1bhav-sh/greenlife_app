@@ -186,9 +186,28 @@
                 <p class="text-muted mb-0">Upload an image to detect the waste type using AI</p>
             </div>
             <div class="card-body">
-                <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
-                <img id="preview" style="max-width:250px; display:none;" class="rounded shadow-sm mb-3" />
-                <div id="aiResult" class="fw-bold eco-title"></div>
+                <div class="card-body">
+  <!-- 📁 Upload Image Option -->
+  <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
+  <img id="preview" style="max-width:250px; display:none;" class="rounded shadow-sm mb-3" />
+  <div id="aiResult" class="fw-bold eco-title"></div>
+
+  <!-- 🎥 CAMERA FEATURE START -->
+  <div class="mt-3" id="cameraBlock">
+    <div class="d-flex justify-content-center gap-2">
+      <button id="useCamera" class="btn btn-outline-secondary">🎥 Use Camera</button>
+      <button id="captureBtn" class="btn btn-success" style="display:none;">📸 Capture</button>
+      <button id="stopCamera" class="btn btn-outline-danger" style="display:none;">✖ Stop</button>
+    </div>
+
+    <div class="mt-3 text-center">
+      <video id="video" autoplay playsinline style="max-width:300px; display:none; border-radius:8px;"></video>
+      <canvas id="captureCanvas" width="320" height="240" style="display:none;"></canvas>
+    </div>
+  </div>
+  <!-- 🎥 CAMERA FEATURE END -->
+</div>
+
             </div>
         </div>
     </div>
@@ -247,7 +266,7 @@ resultDiv.innerHTML = `
            aria-valuenow="${confidence}" aria-valuemin="0" aria-valuemax="100">
            ${confidence}%
       </div>
-    </div>
+    </div>  
   </div>
 `;
 
@@ -255,6 +274,91 @@ resultDiv.innerHTML = `
         });
 
         initModel();
+          // ---------------- CAMERA FEATURE ----------------
+  const useCameraBtn = document.getElementById('useCamera');
+  const captureBtn = document.getElementById('captureBtn');
+  const stopCameraBtn = document.getElementById('stopCamera');
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('captureCanvas');
+  const ctx = canvas.getContext('2d');
+  const previewImg = document.getElementById('preview');
+  const resultDiv = document.getElementById('aiResult');
+  const itemDropdown = document.getElementById('item');
+
+  let stream = null;
+
+  function showCameraUI(enabled) {
+    video.style.display = enabled ? 'block' : 'none';
+    captureBtn.style.display = enabled ? 'inline-block' : 'none';
+    stopCameraBtn.style.display = enabled ? 'inline-block' : 'none';
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      video.srcObject = stream;
+      await video.play();
+      showCameraUI(true);
+    } catch (err) {
+      alert('Please allow camera access or try a different browser.');
+      console.error(err);
+    }
+  }
+
+  function stopCamera() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    showCameraUI(false);
+  }
+
+  async function captureAndPredict() {
+    if (!model) {
+      alert("Model not loaded yet.");
+      return;
+    }
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    previewImg.src = canvas.toDataURL('image/png');
+    previewImg.style.display = 'block';
+
+    const predictions = await model.predict(canvas);
+    predictions.sort((a, b) => b.probability - a.probability);
+    const top = predictions[0];
+    const confidence = (top.probability * 100).toFixed(1);
+
+    resultDiv.innerHTML = `
+      <div class="text-center">
+        <p class="mb-2">🗑️ Detected: <strong class="text-success">${top.className}</strong></p>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+               role="progressbar" style="width: ${confidence}%" 
+               aria-valuenow="${confidence}" aria-valuemin="0" aria-valuemax="100">
+               ${confidence}%
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Optional: auto-select matching item in dropdown
+    const mapping = {
+      'plastic': 'Plastic Bottles',
+      'cardboard': 'Cardboard',
+      'metal': 'Metal',
+      'glass': 'Glass',
+      'electronics': 'Electronics',
+      'e-waste': 'E-Waste'
+    };
+    for (const [key, val] of Object.entries(mapping)) {
+      if (top.className.toLowerCase().includes(key)) {
+        itemDropdown.value = val;
+        break;
+      }
+    }
+  }
+
+  useCameraBtn.addEventListener('click', startCamera);
+  captureBtn.addEventListener('click', captureAndPredict);
+  stopCameraBtn.addEventListener('click', stopCamera);
+
     </script>
 
     </body>
