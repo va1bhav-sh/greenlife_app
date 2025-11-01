@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Eco-Challenges — GreenLife{% endblock %}
+{% block content %}
+
+<div class="text-center mb-5">
+  <h1 class="display-6" style="color: var(--eco-green);">⭐ Daily Eco-Challenges</h1>
+  <p class="lead text-muted">Complete challenges to earn extra points and grow your forest!</p>
+</div>
+
+<div class="row g-4">
+  {% for challenge in challenges %}
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm {% if challenge.id in completed_ids %}border-success{% endif %}">
+        <div class="card-body d-flex flex-column">
+          <h4 class="card-title">{{ challenge.title }}</h4>
+          <p class="card-text text-muted">{{ challenge.description }}</p>
+          <p class="fw-bold text-success">+{{ challenge.points_reward }} Points</p>
+          
+          <div class="mt-auto">
+            {% if challenge.id in completed_ids %}
+              <button class="btn btn-success w-100" disabled>
+                ✅ Completed
+              </button>
+            {% else %}
+              <form method="POST" action="{{ url_for('complete_challenge', challenge_id=challenge.id) }}">
+                <button type="submit" class="btn btn-outline-success w-100">
+                  Mark as Complete
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

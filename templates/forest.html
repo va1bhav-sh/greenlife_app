@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}My Forest — GreenLife{% endblock %}
+{% block content %}
+
+<div class="text-center mb-5">
+  <h1 class="display-6" style="color: var(--eco-green);">🌲 Your Virtual Forest</h1>
+  <p class="lead text-muted">Each completed pickup helps your forest grow. Keep it up!</p>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body text-center p-5">
+    
+    <div style="font-size: 150px; line-height: 1;">
+      {{ stage[0] }}
+    </div>
+    
+    <h2 class="mt-4">{{ stage[1] }}</h2>
+    <p class="text-muted fs-4">Level: {{ level }}</p>
+
+    {% if next_stage %}
+      <p class="mt-4">
+        <strong>Next Stage:</strong> {{ next_stage[1] }} (at Level {{ next_stage[2] }})
+      </p>
+      <div class="progress" style="height: 25px;">
+        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+             role="progressbar" 
+             style="width: {{ progress }}%;" 
+             aria-valuenow="{{ progress }}" 
+             aria-valuemin="0" 
+             aria-valuemax="100">
+          {{ "%.0f"|format(progress) }}%
+        </div>
+      </div>
+      <p class="text-muted mt-2">
+        {{ (next_stage[2] - level) }} more pickups to reach the next stage!
+      </p>
+    {% else %}
+      <h3 class="text-success mt-4">🎉 You've reached the maximum level! You are a true Eco-Legend!</h3>
+    {% endif %}
+    
+  </div>
+</div>
+
+{% endblock %}
