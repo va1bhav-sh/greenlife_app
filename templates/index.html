@@ -178,6 +178,85 @@
             </div>
         </div>
     </div>
+        <!-- 🧠 AI Waste Recognition Section -->
+    <div class="container text-center mt-5">
+        <div class="card eco-card border-0 rounded-4 mb-4">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h2 class="h4 eco-title mb-1">🧠 AI Waste Recognition</h2>
+                <p class="text-muted mb-0">Upload an image to detect the waste type using AI</p>
+            </div>
+            <div class="card-body">
+                <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
+                <img id="preview" style="max-width:250px; display:none;" class="rounded shadow-sm mb-3" />
+                <div id="aiResult" class="fw-bold eco-title"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Teachable Machine Library -->
+    <!-- Load TensorFlow.js (required by Teachable Machine) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+
+<!-- Teachable Machine image library (must come after tfjs) -->
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+    <script>
+        const MODEL_URL = "/static/model/model.json";
+        const METADATA_URL = "/static/model/metadata.json";
+        let model;
+
+        // Load model
+        async function initModel() {
+            try {
+                model = await tmImage.load(MODEL_URL, METADATA_URL);
+                console.log("✅ Model Loaded Successfully");
+            } catch (error) {
+                console.error("❌ Error loading model:", error);
+                alert("Model could not be loaded. Check /static/model/ folder.");
+            }
+        }
+
+        // Image detection
+        document.getElementById('imageInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const img = document.getElementById('preview');
+            img.src = URL.createObjectURL(file);
+            img.style.display = 'block';
+
+            img.onload = async () => {
+                if (!model) {
+                    alert("Model not loaded yet. Please wait.");
+                    return;
+                }
+
+                const predictions = await model.predict(img);
+                predictions.sort((a, b) => b.probability - a.probability);
+                const top = predictions[0];
+
+                const confidence = (top.probability * 100).toFixed(1);
+const resultDiv = document.getElementById('aiResult');
+resultDiv.innerHTML = `
+  <div class="text-center">
+    <p class="mb-2">🗑️ Detected: <strong class="text-success">${top.className}</strong></p>
+    <div class="progress" style="height: 20px;">
+      <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+           role="progressbar" 
+           style="width: ${confidence}%" 
+           aria-valuenow="${confidence}" aria-valuemin="0" aria-valuemax="100">
+           ${confidence}%
+      </div>
+    </div>
+  </div>
+`;
+
+            };
+        });
+
+        initModel();
+    </script>
+
     </body>
 
 </html>
