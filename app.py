@@ -10,16 +10,9 @@ import os
 
 # --- Flask Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-123') # Add a default
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///greenlife.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# --- FIX: Read the database URL from the environment variable ---
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    # Fix for newer SQLAlchemy versions
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///greenlife.db'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -292,6 +285,7 @@ def forest():
                            next_stage=next_stage, 
                            progress=progress_percent)
 
+
 # --- Auth Routes ---
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -300,11 +294,20 @@ def signup():
         email = request.form.get('email')
         pw = request.form.get('password')
 
+        # --- FIX: Convert empty string '' to None (NULL) ---
+        # This allows multiple users to sign up without an email
+        # without violating the UNIQUE constraint.
+        if email == '':
+            email = None
+        # --- END FIX ---
+
         if User.query.filter_by(name=name).first():
-            flash('Name already used')
+            flash('Name already used', 'warning') # Added category
             return redirect(url_for('signup'))
+        
+        # This check will now be skipped if email is None, which is correct.
         if email and User.query.filter_by(email=email).first():
-            flash('Email already used')
+            flash('Email already used', 'warning') # Added category
             return redirect(url_for('signup'))
 
         u = User(name=name, email=email)
@@ -400,13 +403,7 @@ def rider_complete(pickup_id):
     db.session.commit()
     return redirect(url_for('rider_dashboard'))
 
-# --- FIX: Add a custom command to initialize the database ---
-@app.cli.command("initdb")
-def initdb_command():
-    """Initializes the database and creates challenges."""
-    init_db()
-    print("Initialized the database and created dummy challenges.")
-
 # --- Main Run ---
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
